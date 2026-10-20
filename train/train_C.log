@@ -1,0 +1,18 @@
+arch C {'vocab': 64, 'd': 64, 'n_layer': 3, 'n_head': 4, 'n_kv_head': 1, 'ffn': 128, 'ctx': 128, 'norm_g': 5}  params 84353
+[float] step      0  val 19.0647  (1s)
+[float] step   5000  val 1.0241  (211s)
+[float] step  10000  val 0.9833  (349s)
+[float] step  15000  val 0.9645  (461s)
+[float] step  20000  val 0.9517  (566s)
+[float] step  25000  val 0.9414  (674s)
+[float] step  30000  val 0.9334  (784s)
+[float] step  35000  val 0.9284  (912s)
+[float] step  40000  val 0.9262  (1020s)
+calibration: {'resid_absmax': 54.575, 'norm_absmax': 5.6571, 'norm_clip_frac': 0.0019, 's_q0': 0.0415, 's_k0': 0.0211, 's_v0': 0.0238, 's_h0': 0.0254, 's_q1': 0.0601, 's_k1': 0.0455, 's_v1': 0.0232, 's_h1': 0.043, 's_q2': 0.0542, 's_k2': 0.0365, 's_v2': 0.0308, 's_h2': 0.0654, 'emb_absmax': 3.0107, 'emb_shift': 5}
+[qat] before fine-tune val 0.9486
+[qat] step      0  val 0.9486  (1s)
+[qat] step   5000  val 0.9372  (160s)
+[qat] step   6000  val 0.9376  (193s)
+recalibration: {'resid_absmax': 50.2243, 'norm_absmax': 5.4013, 'norm_clip_frac': 0.001, 's_q0': 0.0427, 's_k0': 0.0214, 's_v0': 0.0243, 's_h0': 0.0254, 's_q1': 0.0605, 's_k1': 0.0442, 's_v1': 0.0237, 's_h1': 0.0437, 's_q2': 0.0549, 's_k2': 0.0362, 's_v2': 0.0312, 's_h2': 0.0643, 'emb_absmax': 3.0242, 'emb_shift': 5}
+[qat] after recalibration val 0.9364
+saved ckpt_C.pt

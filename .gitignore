@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+# large training data (regenerate locally)
+data/
+# third-party reference repos
+ref/
+# raw device backup
+circuitpy-backup-*/
+# build intermediates (bitstreams are kept)
+rtl/build/*
+!rtl/build/*.bit
+*.log

@@ -1,0 +1,522 @@
+<title>GreyBadge Tiny LLM</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500&display=swap">
+<style>
+/* Layout: one schematic sheet per figure, read top to bottom; copper marks the RP2350-to-FPGA link and the token path. */
+:root {
+  --paper: #f2f5f3;
+  --ink: #17221e;
+  --muted: #56655f;
+  --line: #a9b7b0;
+  --panel: #e3eae6;
+  --panel2: #d6e0db;
+  --mem: #2d5d86;
+  --memfill: #dbe6ef;
+  --copper: #a4560c;
+  --s1: #2d5d86;
+  --s2: #2b8073;
+  --s3: #9a8a22;
+  --s4: #56655f;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --cond: "IBM Plex Sans Condensed", "IBM Plex Sans", "Arial Narrow", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0d1512; --ink: #dce7e1; --muted: #93a69d; --line: #3a4a43; --panel: #15201c; --panel2: #1d2a25;
+    --mem: #8fb8de; --memfill: #142231; --copper: #e39d55; --s1: #5f93c4; --s2: #4fb3a4; --s3: #c9b85a; --s4: #93a69d;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0d1512; --ink: #dce7e1; --muted: #93a69d; --line: #3a4a43; --panel: #15201c; --panel2: #1d2a25;
+  --mem: #8fb8de; --memfill: #142231; --copper: #e39d55; --s1: #5f93c4; --s2: #4fb3a4; --s3: #c9b85a; --s4: #93a69d;
+  color-scheme: dark;
+}
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.55;
+}
+.sheet {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding-block: 40px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid;
+  gap: 44px;
+}
+header { display: grid; gap: 12px; }
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+h1 {
+  font-family: var(--cond);
+  font-weight: 600;
+  font-size: clamp(30px, 5vw, 44px);
+  line-height: 1.1;
+  margin: 0;
+  text-wrap: balance;
+}
+h2 {
+  font-family: var(--cond);
+  font-weight: 600;
+  font-size: 22px;
+  margin: 0;
+  text-wrap: balance;
+}
+.lede { max-width: 66ch; margin: 0; color: var(--ink); }
+.specs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.specs li { display: flex; gap: 6px; }
+.specs b { font-weight: 500; }
+.specs span { color: var(--muted); }
+figure { margin: 0; display: grid; gap: 12px; }
+.fighead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; }
+.fignum { font-family: var(--mono); font-size: 12px; color: var(--muted); letter-spacing: 0.06em; }
+.scroll {
+  overflow-x: auto;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding-block: 10px;
+}
+.scroll svg { display: block; width: 100%; min-width: 860px; height: auto; }
+figcaption { max-width: 72ch; color: var(--muted); font-size: 14px; }
+
+/* schematic marks */
+svg text { fill: var(--ink); font-family: var(--sans); font-size: 12px; }
+svg .h { font-family: var(--cond); font-weight: 600; font-size: 14px; }
+svg .m { font-family: var(--mono); font-size: 11.5px; }
+svg .mu { fill: var(--muted); font-size: 11.5px; }
+svg .cu { fill: var(--copper); }
+svg .blk { fill: var(--panel); stroke: var(--ink); stroke-width: 1.3; }
+svg .alu { fill: var(--panel2); stroke: var(--ink); stroke-width: 1.3; }
+svg .mem { fill: var(--memfill); stroke: var(--mem); stroke-width: 1.3; }
+svg .inner { fill: var(--paper); stroke: var(--line); stroke-width: 1.2; }
+svg .w { stroke: var(--ink); stroke-width: 1.4; fill: none; }
+svg .wcu { stroke: var(--copper); stroke-width: 2.2; fill: none; }
+svg .dash { stroke: var(--muted); stroke-width: 1.3; stroke-dasharray: 5 4; fill: none; }
+svg .bus { stroke: var(--ink); stroke-width: 7; fill: none; }
+svg .ahk { fill: var(--ink); }
+svg .ahc { fill: var(--copper); }
+svg .ahm { fill: var(--muted); }
+svg .lcd { fill: var(--panel2); stroke: var(--ink); stroke-width: 1.3; }
+svg .led { fill: var(--s3); stroke: var(--ink); stroke-width: 1; }
+svg .key { fill: var(--panel2); stroke: var(--ink); stroke-width: 1; }
+svg .chip { fill: var(--panel); stroke: var(--line); stroke-width: 1.2; }
+svg .chipl { fill: var(--memfill); stroke: var(--mem); stroke-width: 1.2; }
+svg .s1 { fill: var(--s1); }
+svg .s2 { fill: var(--s2); }
+svg .s3 { fill: var(--s3); }
+svg .s4 { fill: var(--s4); }
+
+.pins { overflow-x: auto; }
+table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 620px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+th, td { text-align: left; padding: 7px 14px 7px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+td code { font-family: var(--mono); font-size: 13px; }
+tr.cu td:first-child, tr.cu td:nth-child(2) { color: var(--copper); }
+footer { color: var(--muted); font-size: 13px; }
+footer code { font-family: var(--mono); font-size: 12.5px; }
+a { color: var(--copper); }
+a:focus-visible { outline: 2px solid var(--copper); outline-offset: 2px; }
+</style>
+
+<main class="sheet">
+  <header>
+    <div class="eyebrow">GreyMecha/Army badge · LLM bitstream</div>
+    <h1>GreyBadge Tiny LLM</h1>
+    <p class="lede">An 84K-parameter character-level GPT that runs entirely inside the badge's Lattice ECP5. The RP2350 loads the bitstream and passes text back and forth. Every multiply, attention score and sampled character is computed in FPGA fabric.</p>
+    <ul class="specs">
+      <li><span>FPGA</span><b>LFE5U-25F</b></li>
+      <li><span>clock</span><b>31 MHz</b></li>
+      <li><span>block RAM</span><b>48 / 56</b></li>
+      <li><span>logic</span><b>21%</b></li>
+      <li><span>DSP</span><b>3 / 28</b></li>
+      <li><span>per char</span><b>≈5.8 ms</b></li>
+    </ul>
+  </header>
+
+  <figure>
+    <div class="fighead"><span class="fignum">FIG 1</span><h2>Board wiring</h2></div>
+    <div class="scroll">
+      <svg viewBox="0 0 1120 600" role="img" aria-label="Board wiring: the laptop talks to the RP2350 over USB serial; the RP2350 drives the round LCD over SPI0, loads the FPGA over JTAG, and exchanges commands and tokens with the FPGA over four SPI1 wires on GP8 to GP11.">
+        <defs>
+          <marker id="f1k" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ahk"/></marker>
+          <marker id="f1c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ahc"/></marker>
+        </defs>
+
+        <!-- left: laptop, flash, buttons -->
+        <rect class="blk" x="16" y="226" width="158" height="88" rx="4"/>
+        <text class="h" x="95" y="254" text-anchor="middle">Laptop</text>
+        <text class="m" x="95" y="275" text-anchor="middle">llm_gui.py</text>
+        <text class="mu" x="95" y="294" text-anchor="middle">prompt in, story out</text>
+        <line class="w" x1="174" y1="270" x2="270" y2="270" marker-start="url(#f1k)" marker-end="url(#f1k)"/>
+        <text class="mu" x="222" y="261" text-anchor="middle">USB-C serial</text>
+        <text class="m" x="222" y="287" text-anchor="middle">@gen · @t</text>
+
+        <rect class="blk" x="16" y="410" width="158" height="78" rx="4"/>
+        <text class="h" x="95" y="434" text-anchor="middle">16 MB QSPI flash</text>
+        <text class="mu" x="95" y="453" text-anchor="middle">CIRCUITPY drive</text>
+        <text class="m" x="95" y="472" text-anchor="middle">llm.bit, apps/llm.py</text>
+        <line class="w" x1="174" y1="449" x2="270" y2="449" marker-end="url(#f1k)"/>
+        <text class="mu" x="222" y="441" text-anchor="middle">QSPI</text>
+
+        <rect class="blk" x="16" y="508" width="158" height="64" rx="4"/>
+        <text class="h" x="95" y="530" text-anchor="middle">Buttons A, B</text>
+        <text class="m" x="95" y="548" text-anchor="middle">GP7, GP1</text>
+        <text class="mu" x="95" y="564" text-anchor="middle">A story · B exit</text>
+        <line class="w" x1="174" y1="540" x2="270" y2="540" marker-end="url(#f1k)"/>
+
+        <!-- U1 RP2350 -->
+        <rect class="blk" x="270" y="40" width="200" height="532" rx="4"/>
+        <text class="h" x="284" y="64">U1  RP2350A</text>
+        <text class="mu" x="284" y="82">CircuitPython 9.2.8</text>
+        <text class="m" x="280" y="274">USB</text>
+        <text class="m" x="280" y="453">QSPI</text>
+        <text class="m" x="280" y="544">GPIO</text>
+        <text class="m" x="462" y="114" text-anchor="end">GP2 SCK</text>
+        <text class="m" x="462" y="138" text-anchor="end">GP3 MOSI</text>
+        <text class="m" x="462" y="162" text-anchor="end">GP4 DC</text>
+        <text class="m" x="462" y="186" text-anchor="end">GP5 CS</text>
+        <text class="m" x="462" y="210" text-anchor="end">GP6 RST</text>
+        <text class="m cu" x="462" y="290" text-anchor="end">GP8 MISO</text>
+        <text class="m cu" x="462" y="318" text-anchor="end">GP9 CS_N</text>
+        <text class="m cu" x="462" y="346" text-anchor="end">GP10 SCK</text>
+        <text class="m cu" x="462" y="374" text-anchor="end">GP11 MOSI</text>
+        <text class="m" x="462" y="434" text-anchor="end">GP16 TDO</text>
+        <text class="m" x="462" y="462" text-anchor="end">GP17 TMS</text>
+        <text class="m" x="462" y="490" text-anchor="end">GP18 TDI</text>
+        <text class="m" x="462" y="518" text-anchor="end">GP19 TCK</text>
+        <text class="m" x="462" y="546" text-anchor="end">GP20 RST</text>
+
+        <!-- display wires -->
+        <text class="mu" x="585" y="98" text-anchor="middle">SPI0 · screen pixels</text>
+        <line class="w" x1="470" y1="110" x2="700" y2="110" marker-end="url(#f1k)"/>
+        <line class="w" x1="470" y1="134" x2="700" y2="134" marker-end="url(#f1k)"/>
+        <line class="w" x1="470" y1="158" x2="700" y2="158" marker-end="url(#f1k)"/>
+        <line class="w" x1="470" y1="182" x2="700" y2="182" marker-end="url(#f1k)"/>
+        <line class="w" x1="470" y1="206" x2="700" y2="206" marker-end="url(#f1k)"/>
+
+        <!-- SPI1 link -->
+        <text class="m cu" x="585" y="276" text-anchor="middle">SPI1 · mode 0 · 2 MHz</text>
+        <line class="wcu" x1="700" y1="286" x2="470" y2="286" marker-end="url(#f1c)"/>
+        <line class="wcu" x1="470" y1="314" x2="700" y2="314" marker-end="url(#f1c)"/>
+        <line class="wcu" x1="470" y1="342" x2="700" y2="342" marker-end="url(#f1c)"/>
+        <line class="wcu" x1="470" y1="370" x2="700" y2="370" marker-end="url(#f1c)"/>
+        <text class="mu" x="585" y="392" text-anchor="middle">commands in, tokens out</text>
+
+        <!-- JTAG -->
+        <text class="mu" x="585" y="420" text-anchor="middle">JTAG · loads llm.bit when the app opens</text>
+        <line class="w" x1="700" y1="430" x2="470" y2="430" marker-end="url(#f1k)"/>
+        <line class="w" x1="470" y1="458" x2="700" y2="458" marker-end="url(#f1k)"/>
+        <line class="w" x1="470" y1="486" x2="700" y2="486" marker-end="url(#f1k)"/>
+        <line class="w" x1="470" y1="514" x2="700" y2="514" marker-end="url(#f1k)"/>
+        <line class="w" x1="470" y1="542" x2="700" y2="542" marker-end="url(#f1k)"/>
+        <text class="mu" x="585" y="562" text-anchor="middle">696 KB in about 11 s</text>
+
+        <!-- U3 display -->
+        <rect class="blk" x="700" y="64" width="260" height="168" rx="4"/>
+        <text class="h" x="712" y="88">U3  GC9A01</text>
+        <text class="m" x="710" y="114">SCK</text>
+        <text class="m" x="710" y="138">MOSI</text>
+        <text class="m" x="710" y="162">DC</text>
+        <text class="m" x="710" y="186">CS</text>
+        <text class="m" x="710" y="210">RST</text>
+        <circle class="lcd" cx="872" cy="150" r="58"/>
+        <text class="m" x="872" y="146" text-anchor="middle">240 × 240</text>
+        <text class="mu" x="872" y="164" text-anchor="middle">story text</text>
+
+        <!-- U2 FPGA -->
+        <rect class="blk" x="700" y="248" width="260" height="324" rx="4"/>
+        <text class="h" x="712" y="270">U2  LFE5U-25F</text>
+        <text class="m cu" x="710" y="290">A15 MISO</text>
+        <text class="m cu" x="710" y="318">B15 CS_N</text>
+        <text class="m cu" x="710" y="346">B16 SCK</text>
+        <text class="m cu" x="710" y="374">C15 MOSI</text>
+        <text class="m" x="710" y="434">TDO</text>
+        <text class="m" x="710" y="462">TMS</text>
+        <text class="m" x="710" y="490">TDI</text>
+        <text class="m" x="710" y="518">TCK</text>
+        <text class="m" x="710" y="546">RESET</text>
+        <path class="wcu" d="M772,286 H786 M772,314 H786 M772,342 H786 M772,370 H786 M786,286 V370"/>
+        <line class="wcu" x1="786" y1="328" x2="812" y2="328" marker-end="url(#f1c)"/>
+        <rect class="inner" x="812" y="286" width="136" height="100" rx="3"/>
+        <text class="h" x="880" y="308" text-anchor="middle">LLM core</text>
+        <text class="m" x="880" y="328" text-anchor="middle">84K weights</text>
+        <text class="m" x="880" y="346" text-anchor="middle">48/56 block RAM</text>
+        <text class="m" x="880" y="364" text-anchor="middle">31 MHz OSCG</text>
+        <path class="w" d="M748,430 H786 M748,458 H786 M748,486 H786 M748,514 H786 M760,542 H786 M786,430 V542"/>
+        <line class="w" x1="786" y1="474" x2="812" y2="474" marker-end="url(#f1k)"/>
+        <rect class="inner" x="812" y="426" width="136" height="96" rx="3"/>
+        <text class="h" x="880" y="450" text-anchor="middle">Config SRAM</text>
+        <text class="mu" x="880" y="470" text-anchor="middle">written over JTAG</text>
+        <text class="m" x="880" y="490" text-anchor="middle">main.bit / llm.bit</text>
+
+        <!-- LEDs and buttons on the FPGA -->
+        <line class="w" x1="960" y1="326" x2="988" y2="326" marker-end="url(#f1k)"/>
+        <text class="h" x="992" y="298">LED[7:0]</text>
+        <text class="m" x="992" y="312">C3–D6</text>
+        <circle class="led" cx="998" cy="326" r="5"/>
+        <circle class="led" cx="1012" cy="326" r="5"/>
+        <circle class="led" cx="1026" cy="326" r="5"/>
+        <circle class="led" cx="1040" cy="326" r="5"/>
+        <circle class="led" cx="1054" cy="326" r="5"/>
+        <circle class="led" cx="1068" cy="326" r="5"/>
+        <circle class="led" cx="1082" cy="326" r="5"/>
+        <circle class="led" cx="1096" cy="326" r="5"/>
+        <text class="mu" x="992" y="350">busy · FIFO · token</text>
+        <line class="w" x1="988" y1="474" x2="960" y2="474" marker-end="url(#f1k)"/>
+        <text class="h" x="992" y="420">BTN[4:0]</text>
+        <text class="m" x="992" y="436">B4 A5 B5 A6 B6</text>
+        <circle class="key" cx="1046" cy="458" r="6"/>
+        <circle class="key" cx="1030" cy="474" r="6"/>
+        <circle class="key" cx="1046" cy="474" r="6"/>
+        <circle class="key" cx="1062" cy="474" r="6"/>
+        <circle class="key" cx="1046" cy="490" r="6"/>
+        <text class="mu" x="992" y="516">status bits 7:3</text>
+      </svg>
+    </div>
+    <figcaption>The RP2350 writes the LLM bitstream into the FPGA's configuration memory over JTAG when the app opens. After that, the four copper SPI1 wires are the only link to the model: commands and prompt characters go in, sampled characters come out. Leaving the app writes the badge's original <code>main.bit</code> back.</figcaption>
+  </figure>
+
+  <figure>
+    <div class="fighead"><span class="fignum">FIG 2</span><h2>Inside the ECP5</h2></div>
+    <div class="scroll">
+      <svg viewBox="0 0 1120 580" role="img" aria-label="FPGA datapath: an SPI slave and command decoder start the sequencer, which runs a fixed program over block-RAM weights, activations and a K/V ring buffer through one multiply-accumulate, a requantizer, a square root and a divider. The sampled token loops back as the next input and is queued in a FIFO for the RP2350.">
+        <defs>
+          <marker id="f2k" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ahk"/></marker>
+          <marker id="f2m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ahm"/></marker>
+          <marker id="f2c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ahc"/></marker>
+          <marker id="f2b" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="18" markerHeight="18" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ahk"/></marker>
+        </defs>
+
+        <!-- interface column -->
+        <text class="m cu" x="116" y="22" text-anchor="middle">from RP2350 GP8–GP11</text>
+        <line class="wcu" x1="116" y1="30" x2="116" y2="56" marker-end="url(#f2c)"/>
+        <rect class="blk" x="16" y="56" width="200" height="64" rx="4"/>
+        <text class="h" x="32" y="80">SPI slave</text>
+        <text class="mu" x="32" y="98">mode 0, 2-FF synchronizers</text>
+        <text class="mu" x="32" y="113">sampled by the 31 MHz clock</text>
+        <line class="w" x1="116" y1="120" x2="116" y2="150" marker-end="url(#f2k)"/>
+        <text class="mu" x="124" y="139">bytes</text>
+
+        <rect class="blk" x="16" y="150" width="200" height="176" rx="4"/>
+        <text class="h" x="32" y="174">Command decoder</text>
+        <text class="m" x="32" y="196">0x01 reset context</text>
+        <text class="m" x="32" y="214">0x02 run token</text>
+        <text class="m" x="32" y="232">0x03 seed RNG</text>
+        <text class="m" x="32" y="250">0x04 stop</text>
+        <text class="m" x="32" y="268">0x10 status</text>
+        <text class="m" x="32" y="286">0x11 read tokens</text>
+        <text class="m" x="32" y="304">0x12 read logits</text>
+
+        <line class="w" x1="116" y1="356" x2="116" y2="326" marker-end="url(#f2k)"/>
+        <text class="mu" x="124" y="345">pop</text>
+        <rect class="blk" x="16" y="356" width="200" height="60" rx="4"/>
+        <text class="h" x="32" y="380">Token FIFO</text>
+        <text class="m" x="32" y="400">256 × 6-bit</text>
+
+        <rect class="blk" x="16" y="446" width="200" height="64" rx="4"/>
+        <text class="h" x="32" y="470">OSCG oscillator</text>
+        <text class="m" x="32" y="490">310 MHz ÷ 10 = 31 MHz</text>
+
+        <path class="w" d="M216,196 H253 V88 H290" marker-end="url(#f2k)"/>
+        <text class="mu" x="245" y="142" text-anchor="middle" transform="rotate(-90 245 142)">run · seed · stop</text>
+
+        <!-- sequencer and memories -->
+        <rect class="blk" x="290" y="56" width="240" height="64" rx="4"/>
+        <text class="h" x="306" y="80">Sequencer</text>
+        <text class="mu" x="306" y="98">32-op program, one pass per token</text>
+        <text class="m" x="306" y="113">EMBED NORM MATVEC ATTN SAMPLE</text>
+
+        <rect class="mem" x="290" y="150" width="240" height="44" rx="3"/>
+        <text class="h" x="306" y="168">Weight ROM</text>
+        <text class="m" x="306" y="186">83,968 × int8 · 37 EBR</text>
+        <rect class="mem" x="290" y="204" width="240" height="44" rx="3"/>
+        <text class="h" x="306" y="222">Row scales</text>
+        <text class="m" x="306" y="240">1,056 × u16 · 2 EBR</text>
+        <rect class="mem" x="290" y="258" width="240" height="44" rx="3"/>
+        <text class="h" x="306" y="276">Activations</text>
+        <text class="m" x="306" y="294">512 × int8 · N Q A H</text>
+        <rect class="mem" x="290" y="312" width="240" height="44" rx="3"/>
+        <text class="h" x="306" y="330">Residual stream</text>
+        <text class="m" x="306" y="348">64 × int16 · Q7.8</text>
+        <rect class="mem" x="290" y="366" width="240" height="44" rx="3"/>
+        <text class="h" x="306" y="384">K/V ring buffer</text>
+        <text class="m" x="306" y="402">3 × 128 pos × 32 B · 6 EBR</text>
+        <rect class="mem" x="290" y="420" width="240" height="44" rx="3"/>
+        <text class="h" x="306" y="438">exp lookup</text>
+        <text class="m" x="306" y="456">512 × u16 = e^(−u/32)</text>
+        <rect class="mem" x="290" y="474" width="240" height="44" rx="3"/>
+        <text class="h" x="306" y="492">Scores and logits</text>
+        <text class="m" x="306" y="510">128 × 32 · 64 × 24</text>
+
+        <!-- buses -->
+        <line class="bus" x1="534" y1="185" x2="644" y2="185" marker-end="url(#f2b)"/>
+        <text class="m" x="590" y="172" text-anchor="middle">operands</text>
+        <text class="mu" x="590" y="204" text-anchor="middle">w, x, k, v</text>
+        <line class="bus" x1="646" y1="275" x2="536" y2="275" marker-end="url(#f2b)"/>
+        <text class="m" x="590" y="262" text-anchor="middle">results</text>
+        <text class="mu" x="590" y="294" text-anchor="middle">q k v h, X +=</text>
+
+        <path class="dash" d="M530,88 H755 V150" marker-end="url(#f2m)"/>
+        <text class="mu" x="642" y="80" text-anchor="middle">op, addresses</text>
+
+        <!-- arithmetic -->
+        <rect class="alu" x="650" y="150" width="210" height="70" rx="4"/>
+        <text class="h" x="666" y="172">Multiply-accumulate</text>
+        <text class="m" x="666" y="192">17 × 8 → 40-bit</text>
+        <text class="mu" x="666" y="209">one product per cycle</text>
+        <line class="w" x1="755" y1="220" x2="755" y2="240" marker-end="url(#f2k)"/>
+        <rect class="alu" x="650" y="240" width="210" height="70" rx="4"/>
+        <text class="h" x="666" y="262">Requantize</text>
+        <text class="m" x="666" y="282">× row scale, round, ≫ shift</text>
+        <text class="mu" x="666" y="299">clamp to int8 or int16</text>
+        <rect class="alu" x="650" y="330" width="210" height="50" rx="4"/>
+        <text class="h" x="666" y="352">Square root</text>
+        <text class="m" x="666" y="370">40-bit, 20 cycles</text>
+        <rect class="alu" x="650" y="400" width="210" height="50" rx="4"/>
+        <text class="h" x="666" y="422">Divider</text>
+        <text class="m" x="666" y="440">32 ÷ 24-bit, 32 cycles</text>
+        <rect class="alu" x="650" y="470" width="210" height="48" rx="4"/>
+        <text class="h" x="666" y="492">xorshift32</text>
+        <text class="mu" x="666" y="508">one random draw per token</text>
+
+        <!-- token out -->
+        <text class="h" x="930" y="170">Per token</text>
+        <text class="m" x="930" y="192">≈180K cycles</text>
+        <text class="m" x="930" y="210">≈5.8 ms</text>
+        <text class="m" x="930" y="228">≈172 chars/s</text>
+        <line class="w" x1="860" y1="365" x2="930" y2="365" marker-end="url(#f2k)"/>
+        <text class="mu" x="895" y="357" text-anchor="middle">sample</text>
+        <rect class="blk" x="930" y="330" width="174" height="70" rx="4" style="stroke: var(--copper)"/>
+        <text class="h" x="946" y="352">Next character</text>
+        <text class="m" x="946" y="372">6-bit, 1 of 64</text>
+        <text class="mu" x="946" y="389">temperature, cutoff</text>
+
+        <path class="wcu" d="M1080,330 V30 H410 V56" marker-end="url(#f2c)"/>
+        <text class="m cu" x="745" y="22" text-anchor="middle">fed back as the next input, up to 65,535 characters per run</text>
+        <path class="wcu" d="M1017,400 V548 H236 V386 H216" marker-end="url(#f2c)"/>
+        <text class="m cu" x="626" y="566" text-anchor="middle">queued for the RP2350, which reads it with 0x11</text>
+      </svg>
+    </div>
+    <figcaption>For each character, the sequencer steps through a fixed 32-op program. Operands stream out of block RAM into a single shared multiply-accumulate, get rescaled back to 8 or 16 bits, and are written back. RMSNorm uses the square root and divider, attention uses the exp lookup and divider, and the sampler draws from the RNG. The chosen character loops back as the next input without the RP2350 being involved.</figcaption>
+  </figure>
+
+  <figure>
+    <div class="fighead"><span class="fignum">FIG 3</span><h2>One character, op by op</h2></div>
+    <div class="scroll">
+      <svg viewBox="0 0 1120 214" role="img" aria-label="Program for one character: embed, three transformer layers of norm, Q, K, V, attention, output projection, norm and two MLP matrices, then a final norm, logits and sampling. Of about 180,800 cycles, matrix-vector work is 50 percent, attention 40 percent, RMSNorm 9.5 percent.">
+        <text class="m" x="470" y="20" text-anchor="middle">× 3 layers</text>
+        <path class="w" d="M108,36 V28 H832 V36" style="stroke: var(--mem)"/>
+
+        <rect class="chip" x="16" y="40" width="80" height="44" rx="3"/>
+        <text class="m" x="56" y="58" text-anchor="middle">EMBED</text>
+        <text class="mu" x="56" y="75" text-anchor="middle">64 B</text>
+
+        <rect class="chipl" x="108" y="40" width="76" height="44" rx="3"/>
+        <text class="m" x="146" y="58" text-anchor="middle">NORM</text>
+        <text class="mu" x="146" y="75" text-anchor="middle">RMS</text>
+        <rect class="chipl" x="189" y="40" width="76" height="44" rx="3"/>
+        <text class="m" x="227" y="58" text-anchor="middle">Q</text>
+        <text class="mu" x="227" y="75" text-anchor="middle">64×64</text>
+        <rect class="chipl" x="270" y="40" width="76" height="44" rx="3"/>
+        <text class="m" x="308" y="58" text-anchor="middle">K</text>
+        <text class="mu" x="308" y="75" text-anchor="middle">16×64</text>
+        <rect class="chipl" x="351" y="40" width="76" height="44" rx="3"/>
+        <text class="m" x="389" y="58" text-anchor="middle">V</text>
+        <text class="mu" x="389" y="75" text-anchor="middle">16×64</text>
+        <rect class="chipl" x="432" y="40" width="76" height="44" rx="3"/>
+        <text class="m" x="470" y="58" text-anchor="middle">ATTN</text>
+        <text class="mu" x="470" y="75" text-anchor="middle">4 heads</text>
+        <rect class="chipl" x="513" y="40" width="76" height="44" rx="3"/>
+        <text class="m" x="551" y="58" text-anchor="middle">O +X</text>
+        <text class="mu" x="551" y="75" text-anchor="middle">64×64</text>
+        <rect class="chipl" x="594" y="40" width="76" height="44" rx="3"/>
+        <text class="m" x="632" y="58" text-anchor="middle">NORM</text>
+        <text class="mu" x="632" y="75" text-anchor="middle">RMS</text>
+        <rect class="chipl" x="675" y="40" width="76" height="44" rx="3"/>
+        <text class="m" x="713" y="58" text-anchor="middle">W1 ReLU</text>
+        <text class="mu" x="713" y="75" text-anchor="middle">128×64</text>
+        <rect class="chipl" x="756" y="40" width="76" height="44" rx="3"/>
+        <text class="m" x="794" y="58" text-anchor="middle">W2 +X</text>
+        <text class="mu" x="794" y="75" text-anchor="middle">64×128</text>
+
+        <rect class="chip" x="848" y="40" width="80" height="44" rx="3"/>
+        <text class="m" x="888" y="58" text-anchor="middle">NORM</text>
+        <text class="mu" x="888" y="75" text-anchor="middle">RMS</text>
+        <rect class="chip" x="934" y="40" width="80" height="44" rx="3"/>
+        <text class="m" x="974" y="58" text-anchor="middle">LOGITS</text>
+        <text class="mu" x="974" y="75" text-anchor="middle">64×64</text>
+        <rect class="chip" x="1020" y="40" width="84" height="44" rx="3" style="stroke: var(--copper)"/>
+        <text class="m cu" x="1062" y="58" text-anchor="middle">SAMPLE</text>
+        <text class="mu" x="1062" y="75" text-anchor="middle">1 of 64</text>
+
+        <text class="h" x="16" y="122">Cycles per character, full 128-character context</text>
+        <text class="m" x="16" y="144">Matrix × vector  90.7K · 50%</text>
+        <text class="m" x="566" y="144">Attention  72.0K · 40%</text>
+        <text class="m" x="999" y="144">Norm  17.2K</text>
+        <rect class="s1" x="16" y="152" width="546" height="26"/>
+        <rect class="s2" x="562" y="152" width="433" height="26"/>
+        <rect class="s3" x="995" y="152" width="104" height="26"/>
+        <rect class="s4" x="1099" y="152" width="5" height="26"/>
+        <text class="mu" x="16" y="200">≈180.8K cycles counted from the state machine; measured 180,489 on chip, so ≈5.8 ms per character at 31 MHz.</text>
+        <text class="mu" x="1104" y="200" text-anchor="end">embed + sample 0.8K</text>
+      </svg>
+    </div>
+    <figcaption>Attention is a large share because each of the 4 heads scans all 128 cached positions twice per layer. Matrix work is fixed at about 84K multiply-accumulates per character, one per weight, plus 6 cycles of overhead per output row.</figcaption>
+  </figure>
+
+  <section style="display:grid; gap:12px">
+    <h2>Pin map</h2>
+    <div class="pins">
+      <table>
+        <thead><tr><th>RP2350</th><th>FPGA ball</th><th>Signal</th><th>Direction</th><th>Used for</th></tr></thead>
+        <tbody>
+          <tr class="cu"><td><code>GP8</code></td><td><code>A15</code></td><td>SPI MISO</td><td>FPGA → RP</td><td>status, tokens, logits</td></tr>
+          <tr class="cu"><td><code>GP9</code></td><td><code>B15</code></td><td>SPI CS_N</td><td>RP → FPGA</td><td>frames each command</td></tr>
+          <tr class="cu"><td><code>GP10</code></td><td><code>B16</code></td><td>SPI SCK</td><td>RP → FPGA</td><td>2 MHz, mode 0</td></tr>
+          <tr class="cu"><td><code>GP11</code></td><td><code>C15</code></td><td>SPI MOSI</td><td>RP → FPGA</td><td>commands, prompt characters</td></tr>
+          <tr><td><code>GP16–GP19</code></td><td>JTAG</td><td>TDO, TMS, TDI, TCK</td><td>both</td><td>bitstream load</td></tr>
+          <tr><td><code>GP20</code></td><td>reset</td><td>RST</td><td>RP → FPGA</td><td>pulsed before each load</td></tr>
+          <tr><td><code>GP2–GP6</code></td><td>none</td><td>SCK, MOSI, DC, CS, RST</td><td>RP → LCD</td><td>GC9A01 round screen</td></tr>
+          <tr><td>none</td><td><code>C3 D3 C4 D4 C5 D5 C6 D6</code></td><td>LED[0:7]</td><td>FPGA → LED</td><td>LED7 busy, LED6 FIFO not empty, LED5–0 last character</td></tr>
+          <tr><td>none</td><td><code>B4 A5 B5 A6 B6</code></td><td>BTN[0:4]</td><td>button → FPGA</td><td>reported in status bits 7:3</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>Pin assignments from <a href="https://github.com/NUSGreyhats/greybadge25">NUSGreyhats/greybadge25</a>. Design sources: <code>rtl/top.v</code>, <code>rtl/llm_core.v</code>, <code>badge/apps/llm.py</code>.</footer>
+</main>

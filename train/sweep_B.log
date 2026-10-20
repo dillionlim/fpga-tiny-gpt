@@ -1,0 +1,4 @@
+arch B {'vocab': 64, 'd': 64, 'n_layer': 2, 'n_head': 4, 'n_kv_head': 1, 'ffn': 256, 'ctx': 128, 'norm_g': 5}  params 90369
+[float] step      0  val 20.0474  (1s)
+[float] step   2500  val 1.0953  (183s)
+[float] step   5000  val 1.0354  (364s)

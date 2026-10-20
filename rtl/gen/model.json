@@ -1,0 +1,17 @@
+{
+ "cfg": {
+  "vocab": 64,
+  "d": 64,
+  "n_layer": 3,
+  "n_head": 4,
+  "n_kv_head": 1,
+  "ffn": 128,
+  "ctx": 128,
+  "norm_g": 5
+ },
+ "logit_k": 0.000611706986092031,
+ "chars": "\u0000\n abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.,\"'!?-:;",
+ "n_ops": 32,
+ "w_bytes": 83968,
+ "m_words": 1056
+}
